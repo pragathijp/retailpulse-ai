@@ -1,0 +1,34 @@
+version: 2
+
+sources:
+  - name: raw
+    database: retail_analytics
+    schema: raw
+    tables:
+      - name: retail_transactions
+        description: "Raw 2-year transactional data from UCI Online Retail II dataset."
+
+models:
+  - name: stg_retail_transactions
+    description: "Cleaned and cast staging transactions with cancellation logic."
+    columns:
+      - name: invoice_no
+        description: "Invoice identifier."
+        tests:
+          - not_null
+      - name: stock_code
+        description: "Stock keep unit code."
+        tests:
+          - not_null
+      - name: quantity
+        description: "Item quantity."
+        tests:
+          - not_null
+      - name: unit_price
+        description: "Price per unit."
+        tests:
+          - not_null
+      - name: invoice_ts
+        description: "Timestamp of order placement."
+        tests:
+          - not_null

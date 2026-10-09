@@ -1,0 +1,7 @@
+retailpulse_ai:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "../data/duckdb/retail_analytics.duckdb"
+      threads: 4
