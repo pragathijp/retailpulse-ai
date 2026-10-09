@@ -1,7 +1,7 @@
 # Raw Data Profile
 
-- Source file: online_retail_II.xlsx
-- Variant: online_retail_ii
+- Source file: `online_retail_II.xlsx`
+- Variant: `online_retail_ii`
 
 ## Summary
 

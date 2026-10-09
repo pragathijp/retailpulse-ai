@@ -1,0 +1,7 @@
+priority,segment,r_min,r_max,f_min,f_max,m_min,m_max
+1,Champions,4,5,4,5,4,5
+2,Loyal,3,5,3,5,1,5
+3,New customers,4,5,1,2,1,5
+4,At risk,1,2,3,5,3,5
+5,Hibernating,1,2,1,2,1,5
+6,Other,1,5,1,5,1,5

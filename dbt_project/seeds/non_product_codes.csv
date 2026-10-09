@@ -1,0 +1,16 @@
+stock_code,reason
+POST,postage
+D,discount
+M,manual
+DOT,dotcom postage
+CRUK,charity commission
+C2,carriage
+BANK CHARGES,bank charges
+AMAZONFEE,amazon fee
+B,adjust bad debt
+S,samples
+ADJUST,adjustment
+ADJUST2,adjustment
+PADS,pads to order
+TEST001,test
+TEST002,test

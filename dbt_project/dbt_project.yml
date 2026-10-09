@@ -1,8 +1,8 @@
-name: 'retailpulse_ai'
+name: 'retailpulse'
 version: '1.0.0'
 config-version: 2
 
-profile: 'retailpulse_ai'
+profile: 'retailpulse'
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -15,14 +15,16 @@ clean-targets:
   - "target"
   - "dbt_packages"
 
+vars:
+  dedupe_exact_rows: true
+  rfm_reference_date_offset_days: 1
+  processed_dir: '../data/processed'
+
 models:
-  retailpulse_ai:
+  retailpulse:
     staging:
       +materialized: view
-      +schema: staging
     intermediate:
-      +materialized: view
-      +schema: intermediate
+      +materialized: table
     marts:
       +materialized: table
-      +schema: marts

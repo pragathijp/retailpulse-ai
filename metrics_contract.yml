@@ -1,0 +1,25 @@
+version: 1
+metrics:
+  - name: gross_revenue
+    description: "Total revenue before returns"
+    sql_expression: "sum(gross_sales)"
+    dax_expression: "SUM(fact_sales[gross_sales])"
+    tolerance: 0.01
+
+  - name: return_value
+    description: "Total monetary value of returned/cancelled lines"
+    sql_expression: "sum(return_amount)"
+    dax_expression: "SUM(fact_sales[return_amount])"
+    tolerance: 0.01
+
+  - name: net_revenue
+    description: "Gross revenue minus return value"
+    sql_expression: "sum(net_revenue_line)"
+    dax_expression: "[Gross Revenue] - [Return Value]"
+    tolerance: 0.01
+
+  - name: order_count
+    description: "Distinct valid order count"
+    sql_expression: "count(distinct case when is_valid_sale then invoice_no end)"
+    dax_expression: "CALCULATE(DISTINCTCOUNT(fact_sales[invoice_no]), fact_sales[is_valid_sale] = TRUE())"
+    tolerance: 0
