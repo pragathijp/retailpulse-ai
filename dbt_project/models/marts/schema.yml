@@ -1,0 +1,104 @@
+version: 2
+
+models:
+  - name: fact_sales
+    description: "Line-level fact. Includes null-customer rows so store totals are exact."
+    columns:
+      - name: transaction_line_key
+        data_tests:
+          - not_null
+          - unique
+      - name: customer_id
+        description: "Nullable by design (about one fifth of rows); excluded from RFM."
+
+  - name: dim_date
+    columns:
+      - name: date_key
+        data_tests:
+          - not_null
+          - unique
+
+  - name: mart_monthly_sales
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [sales_month, country]
+    columns:
+      - name: net_revenue
+        data_tests:
+          - not_null
+      - name: is_partial_month
+        data_tests:
+          - not_null
+
+  - name: mart_product_performance
+    columns:
+      - name: stock_code
+        data_tests:
+          - not_null
+          - unique
+      - name: return_rate
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+
+  - name: mart_customer_rfm
+    columns:
+      - name: customer_id
+        data_tests:
+          - not_null
+          - unique
+      - name: frequency
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: recency_days
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+      - name: r_score
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+      - name: f_score
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+      - name: m_score
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+      - name: rfm_score
+        data_tests:
+          - not_null
+      - name: segment
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Champions', 'Loyal', 'New customers', 'At risk', 'Hibernating', 'Other']
+
+  - name: audit_revenue_variance
+    columns:
+      - name: unexplained_revenue
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: -0.01
+                max_value: 0.01
+
+  - name: audit_data_quality
+    columns:
+      - name: check_name
+        data_tests:
+          - not_null
+          - unique

@@ -1,12 +1,17 @@
 import duckdb
 import pandas as pd
 import numpy as np
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from common import parquet  # noqa: E402
 
 def run_rfm_check():
     conn = duckdb.connect()
     
     # Load fact_sales directly from Parquet
-    df_raw = conn.read_parquet("data/processed/fact_sales.parquet").df()
+    df_raw = conn.read_parquet(parquet('fact_sales')).df()
     
     # PRD Rule: Filter customers with at least one valid sale
     valid_customers = df_raw[df_raw['is_valid_sale'] & df_raw['customer_id'].notnull()]['customer_id'].unique()
@@ -33,7 +38,7 @@ def run_rfm_check():
     rfm_pd['m_score'] = pd.qcut(rfm_pd['monetary'].rank(method='first'), 5, labels=[1, 2, 3, 4, 5]).astype(int)
 
     # Load SQL RFM mart
-    df_sql = pd.read_parquet("data/processed/mart_customer_rfm.parquet")
+    df_sql = pd.read_parquet(parquet('mart_customer_rfm'))
 
     # Compare row counts
     assert len(rfm_pd) == len(df_sql), f"Row count mismatch: Pandas ({len(rfm_pd)}) vs SQL ({len(df_sql)})"

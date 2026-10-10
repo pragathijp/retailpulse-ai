@@ -3,5 +3,6 @@ retailpulse:
   outputs:
     dev:
       type: duckdb
-      path: '../data/duckdb/retail_analytics.duckdb'
+      path: "{{ env_var('RP_DB_PATH', '../data/duckdb/retail_analytics.duckdb') }}"
+      schema: main
       threads: 4

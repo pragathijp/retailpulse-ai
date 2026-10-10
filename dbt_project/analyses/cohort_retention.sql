@@ -1,25 +1,35 @@
-with customer_first_purchase as (
-    select
-        customer_id,
-        date_trunc('month', min(invoice_ts)) as cohort_month
+-- Customer cohort retention, months 0 to 12. Customers without an ID are excluded.
+with purchases as (
+    select distinct customer_id, sales_month
     from {{ ref('fact_sales') }}
-    where customer_id is not null and is_valid_sale
-    group by 1
+    where is_valid_sale and customer_id is not null
 ),
-customer_activity as (
-    select distinct
-        f.customer_id,
+cohorts as (
+    select customer_id, min(sales_month) as cohort_month
+    from purchases
+    group by customer_id
+),
+sizes as (
+    select cohort_month, count(*) as cohort_size
+    from cohorts
+    group by cohort_month
+),
+activity as (
+    select
         c.cohort_month,
-        date_trunc('month', f.invoice_ts) as activity_month,
-        datediff('month', c.cohort_month, date_trunc('month', f.invoice_ts)) as month_offset
-    from {{ ref('fact_sales') }} f
-    join customer_first_purchase c on f.customer_id = c.customer_id
-    where f.is_valid_sale
+        date_diff('month', c.cohort_month, p.sales_month) as month_offset,
+        count(distinct p.customer_id) as active_customers
+    from cohorts c
+    join purchases p on p.customer_id = c.customer_id
+    group by 1, 2
 )
 select
-    cohort_month,
-    month_offset,
-    count(distinct customer_id) as active_customers
-from customer_activity
-group by 1, 2
-order by cohort_month, month_offset;
+    a.cohort_month,
+    a.month_offset,
+    s.cohort_size,
+    a.active_customers,
+    cast(a.active_customers * 1.0 / s.cohort_size as decimal(8,4)) as retention_rate
+from activity a
+join sizes s on s.cohort_month = a.cohort_month
+where a.month_offset between 0 and 12
+order by a.cohort_month, a.month_offset

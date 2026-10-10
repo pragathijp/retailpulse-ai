@@ -1,5 +1,9 @@
 import json
-from src.context_builder import build_context
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from context_builder import build_context  # noqa: E402
 
 def ask_assistant(query: str) -> str:
     ctx = build_context()

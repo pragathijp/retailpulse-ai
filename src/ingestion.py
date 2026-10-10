@@ -6,10 +6,10 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[1]
-RAW_DIR = ROOT / 'data' / 'raw'
-DB_PATH = ROOT / 'data' / 'duckdb' / 'retail_analytics.duckdb'
-PROFILE_PATH = ROOT / 'reports' / 'data_profile.md'
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from common import DB_PATH, RAW_DIR, REPORTS  # noqa: E402
+
+PROFILE_PATH = REPORTS / 'data_profile.md'
 NL = chr(10)
 TABLE = 'raw.retail_transactions'
 

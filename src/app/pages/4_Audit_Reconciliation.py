@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from common import parquet  # noqa: E402
 import streamlit as st
 import duckdb
 
@@ -7,7 +12,7 @@ st.title("🛡️ Store-to-RFM Audit & Reconciliation Ledger")
 @st.cache_data
 def load_audit():
     conn = duckdb.connect()
-    df_audit = conn.read_parquet("data/processed/audit_revenue_variance.parquet").df()
+    df_audit = conn.read_parquet(parquet('audit_revenue_variance')).df()
     conn.close()
     return df_audit
 

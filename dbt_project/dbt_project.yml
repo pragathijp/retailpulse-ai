@@ -18,7 +18,8 @@ clean-targets:
 vars:
   dedupe_exact_rows: true
   rfm_reference_date_offset_days: 1
-  processed_dir: '../data/processed'
+  # Absolute path injected by run.py through RP_PROCESSED_DIR; the relative default only suits a manual run from dbt_project/.
+  processed_dir: "{{ env_var('RP_PROCESSED_DIR', '../data/processed') }}"
 
 models:
   retailpulse:

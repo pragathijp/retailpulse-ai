@@ -3,10 +3,15 @@ import pandas as pd
 import numpy as np
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from common import PROC, parquet  # noqa: E402
 
 def run_forecasting():
     conn = duckdb.connect()
-    df_sales = conn.read_parquet("data/processed/fact_sales.parquet").df()
+    df_sales = conn.read_parquet(parquet('fact_sales')).df()
     conn.close()
 
     # Aggregate to weekly revenue
@@ -48,15 +53,15 @@ def run_forecasting():
     train['forecast'] = np.nan
 
     df_out = pd.concat([train, test], ignore_index=True)
-    os.makedirs("data/processed", exist_ok=True)
-    df_out.to_parquet("data/processed/forecast_weekly.parquet")
+    os.makedirs(PROC, exist_ok=True)
+    df_out.to_parquet(parquet('forecast_weekly'))
 
     metrics_df = pd.DataFrame([{
         'mae_naive': mae_naive,
         'mae_model': mae_model,
         'mape_model': mape_model
     }])
-    metrics_df.to_parquet("data/processed/forecast_metrics.parquet")
+    metrics_df.to_parquet(parquet('forecast_metrics'))
 
 if __name__ == "__main__":
     run_forecasting()

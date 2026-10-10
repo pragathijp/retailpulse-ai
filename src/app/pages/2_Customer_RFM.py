@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from common import parquet  # noqa: E402
 import streamlit as st
 import duckdb
 import plotly.express as px
@@ -8,7 +13,7 @@ st.title("👥 Customer RFM Segmentation")
 @st.cache_data
 def load_rfm():
     conn = duckdb.connect()
-    df_rfm = conn.read_parquet("data/processed/mart_customer_rfm.parquet").df()
+    df_rfm = conn.read_parquet(parquet('mart_customer_rfm')).df()
     conn.close()
     return df_rfm
 
@@ -29,7 +34,7 @@ df_seg = df_rfm.groupby('segment', as_index=False).agg(
 
 fig_seg = px.bar(df_seg, x='segment', y='customer_count', color='total_monetary',
                  labels={'segment': 'RFM Segment', 'customer_count': 'Customer Count', 'total_monetary': 'Total Revenue (£)'})
-st.plotly_chart(fig_seg, use_container_width=True)
+st.plotly_chart(fig_seg, width='stretch')
 
 st.subheader("RFM Segment Details")
-st.dataframe(df_seg, use_container_width=True)
+st.dataframe(df_seg, width='stretch')

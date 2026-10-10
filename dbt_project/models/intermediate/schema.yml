@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: int_transactions_cleaned
+    description: "One row per staged line with revenue flags and amounts."
+    columns:
+      - name: transaction_line_key
+        data_tests:
+          - not_null
+          - unique
+      - name: is_return
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
+                quote: false
+      - name: unit_price
+        description: "Valid sale lines must have a strictly positive unit price."
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                inclusive: false
+              config:
+                where: "is_valid_sale"
+      - name: gross_sales
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+      - name: return_amount
+        data_tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0

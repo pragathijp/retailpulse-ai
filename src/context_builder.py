@@ -1,13 +1,18 @@
 import duckdb
 import pandas as pd
 import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from common import parquet  # noqa: E402
 
 def build_context():
     conn = duckdb.connect()
     
     # Extract store totals
-    df_fact = conn.read_parquet("data/processed/fact_sales.parquet").df()
-    df_audit = conn.read_parquet("data/processed/audit_revenue_variance.parquet").df()
+    df_fact = conn.read_parquet(parquet('fact_sales')).df()
+    df_audit = conn.read_parquet(parquet('audit_revenue_variance')).df()
     
     total_net = float(df_fact['net_revenue_line'].sum())
     total_orders = int(df_fact[df_fact['is_valid_sale']]['invoice_no'].nunique())

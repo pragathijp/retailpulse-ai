@@ -10,25 +10,34 @@ sources:
 
 models:
   - name: stg_retail_transactions
-    description: "Cleaned and cast staging transactions with cancellation logic."
+    description: "Typed, trimmed staging transactions with surrogate line key and exact-row deduplication."
     columns:
+      - name: transaction_line_key
+        description: "md5 of the base key (invoice_no, stock_code, invoice_ts, quantity) plus line_seq, unique per line."
+        data_tests:
+          - not_null
+          - unique
       - name: invoice_no
         description: "Invoice identifier."
-        tests:
+        data_tests:
           - not_null
       - name: stock_code
         description: "Stock keep unit code."
-        tests:
+        data_tests:
           - not_null
       - name: quantity
         description: "Item quantity."
-        tests:
+        data_tests:
           - not_null
       - name: unit_price
         description: "Price per unit."
-        tests:
+        data_tests:
           - not_null
       - name: invoice_ts
         description: "Timestamp of order placement."
-        tests:
+        data_tests:
+          - not_null
+      - name: country
+        description: "Customer country; Unknown when missing."
+        data_tests:
           - not_null

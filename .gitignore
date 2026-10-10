@@ -20,3 +20,8 @@ dbt_project/dbt_packages/
 dbt_project/logs/
 reports/*.pbix
 .DS_Store
+dbt_project/.user.yml
+data/ai_context/*
+!data/ai_context/.gitkeep
+.streamlit/secrets.toml
+reports/analysis_*.csv
