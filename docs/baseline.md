@@ -18,3 +18,18 @@
 
 Known issue at baseline: external-model views stored the relative path ../data/processed/,
 so querying them from outside dbt_project failed (fixed in Task 1.3).
+
+## Phase 2 results (real data, after dbt quality layer)
+
+| Item | Value |
+|---|---|
+| dbt build | 59/59 PASS (48 data tests) |
+| Exact duplicates removed | 34,335 |
+| Invalid rows dropped | 0 |
+| Line-key collisions resolved by line_seq (D-6) | 269 |
+| Null-customer rows | 235,151 (net revenue 2,723,471.41) |
+| Return rows | 22,497 |
+| Non-product rows | 5,718 |
+| Zero or negative price rows | 6,019 |
+| Pareto: SKUs for 80 percent of revenue | 1,049 of 4,881 (21.49 percent) |
+| Forecast at baseline | Holt-Winters MAE 89,101.70 is worse than naive 69,840.19 (to be rebuilt in Phase 4) |

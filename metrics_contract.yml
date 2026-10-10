@@ -1,25 +1,52 @@
+# Single definition of every KPI. dbt, DuckDB, Parquet, Power BI and the pytest suite must all agree with it.
+# Each `sql` expression is evaluated against the fact_sales table; each `dax` is the matching Power BI measure.
 version: 1
+currency: GBP
+tolerance_abs: 0.01
+source_table: fact_sales
+parquet_path: data/processed/fact_sales.parquet
+bi_export:
+  file: data/bi_exports/pbi_kpis.csv
+  columns: [metric, value]
+filters:
+  date_range: 'full dataset, inclusive of min and max invoice_date'
+  include_null_customer: true
+  partial_months: 'included in totals; flagged in mart_monthly_sales; excluded from MoM growth and forecasting'
+  non_product_codes: 'included in store revenue; excluded from mart_product_performance'
 metrics:
   - name: gross_revenue
-    description: "Total revenue before returns"
-    sql_expression: "sum(gross_sales)"
-    dax_expression: "SUM(fact_sales[gross_sales])"
+    description: 'Sum of quantity * unit_price on valid sale lines'
+    sql: 'sum(gross_sales)'
+    dax: 'SUM(fact_sales[gross_sales])'
+    dax_measure: 'Gross Revenue'
     tolerance: 0.01
-
-  - name: return_value
-    description: "Total monetary value of returned/cancelled lines"
-    sql_expression: "sum(return_amount)"
-    dax_expression: "SUM(fact_sales[return_amount])"
+  - name: return_amount
+    description: 'Sum of abs(quantity) * unit_price on return lines with unit_price > 0'
+    sql: 'sum(return_amount)'
+    dax: 'SUM(fact_sales[return_amount])'
+    dax_measure: 'Return Value'
     tolerance: 0.01
-
   - name: net_revenue
-    description: "Gross revenue minus return value"
-    sql_expression: "sum(net_revenue_line)"
-    dax_expression: "[Gross Revenue] - [Return Value]"
+    description: 'gross_revenue minus return_amount, subtracted exactly once'
+    sql: 'sum(net_revenue_line)'
+    dax: '[Gross Revenue] - [Return Value]'
+    dax_measure: 'Net Revenue'
     tolerance: 0.01
-
   - name: order_count
-    description: "Distinct valid order count"
-    sql_expression: "count(distinct case when is_valid_sale then invoice_no end)"
-    dax_expression: "CALCULATE(DISTINCTCOUNT(fact_sales[invoice_no]), fact_sales[is_valid_sale] = TRUE())"
+    description: 'Distinct invoices containing a valid sale line'
+    sql: 'count(distinct case when is_valid_sale then invoice_no end)'
+    dax: 'CALCULATE(DISTINCTCOUNT(fact_sales[invoice_no]), fact_sales[is_valid_sale] = TRUE())'
+    dax_measure: 'Orders'
     tolerance: 0
+  - name: units_sold
+    description: 'Sum of quantity on valid sale lines'
+    sql: 'sum(case when is_valid_sale then quantity else 0 end)'
+    dax: 'CALCULATE(SUM(fact_sales[quantity]), fact_sales[is_valid_sale] = TRUE())'
+    dax_measure: 'Units Sold'
+    tolerance: 0
+  - name: aov
+    description: 'gross_revenue divided by order_count'
+    sql: 'sum(gross_sales) / nullif(count(distinct case when is_valid_sale then invoice_no end), 0)'
+    dax: 'DIVIDE([Gross Revenue], [Orders])'
+    dax_measure: 'AOV'
+    tolerance: 0.01
