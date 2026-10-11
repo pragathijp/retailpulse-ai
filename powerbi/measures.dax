@@ -1,0 +1,42 @@
+// RetailPulse AI: Power BI measure library.
+// The first six measures are the contract metrics: names and expressions must equal metrics_contract.yml
+// (tests/test_powerbi_assets.py enforces this). Create a table called _Measures (Enter Data) and add each one.
+
+Gross Revenue = SUM(fact_sales[gross_sales])
+Return Value = SUM(fact_sales[return_amount])
+Net Revenue = [Gross Revenue] - [Return Value]
+Orders = CALCULATE(DISTINCTCOUNT(fact_sales[invoice_no]), fact_sales[is_valid_sale] = TRUE())
+Units Sold = CALCULATE(SUM(fact_sales[quantity]), fact_sales[is_valid_sale] = TRUE())
+AOV = DIVIDE([Gross Revenue], [Orders])
+
+// ---- Supporting measures -------------------------------------------------------------------------
+Return Rate = DIVIDE([Return Value], [Gross Revenue])
+
+Is Partial Month =
+    VAR d1 = MIN(dim_date[date_key])
+    VAR d2 = MAX(dim_date[date_key])
+    RETURN IF(OR(d1 > DATE(YEAR(d1), MONTH(d1), 1), d2 < EOMONTH(d2, 0)), 1, 0)
+
+Net Revenue PM = CALCULATE([Net Revenue], DATEADD(dim_date[date_key], -1, MONTH))
+
+Net Revenue MoM % = IF([Is Partial Month] = 1, BLANK(), DIVIDE([Net Revenue] - [Net Revenue PM], [Net Revenue PM]))
+
+// ---- Customers (RFM) and the revenue variance ledger --------------------------------------------
+RFM Customers = DISTINCTCOUNT(mart_customer_rfm[customer_id])
+RFM Net Revenue = SUM(mart_customer_rfm[monetary_raw])
+Store Net Revenue (audit) = SUM(audit_revenue_variance[total_store_net_revenue])
+Unattributed Revenue = SUM(audit_revenue_variance[unattributed_net_revenue])
+Ineligible Customer Revenue = SUM(audit_revenue_variance[ineligible_customer_net_revenue])
+Revenue Variance = SUM(audit_revenue_variance[delta_revenue])
+Unexplained Variance = SUM(audit_revenue_variance[unexplained_revenue])
+
+// ---- Products (Pareto) ---------------------------------------------------------------------------
+Ranked SKUs = CALCULATE(COUNTROWS(mart_product_performance), mart_product_performance[pareto_rank] > 0)
+SKUs for 80 Percent = CALCULATE(COUNTROWS(mart_product_performance), mart_product_performance[is_top_80] = TRUE())
+Pareto Density % = DIVIDE([SKUs for 80 Percent], [Ranked SKUs])
+
+// ---- Forecast ------------------------------------------------------------------------------------
+Best Forecast Model = CALCULATE(MAX(forecast_metrics[model]), forecast_metrics[is_best] = TRUE())
+Best Model MAE = CALCULATE(MAX(forecast_metrics[mae]), forecast_metrics[is_best] = TRUE())
+Holt-Winters MAE = CALCULATE(MAX(forecast_metrics[mae]), forecast_metrics[model] = "holt_winters")
+Naive MAE = CALCULATE(MAX(forecast_metrics[mae]), forecast_metrics[model] = "naive")

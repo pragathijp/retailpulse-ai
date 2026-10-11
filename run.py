@@ -12,7 +12,7 @@ Commands:
     rfm_check   independent pandas check of the SQL RFM mart
     forecast    weekly revenue forecast
     export      verify the Parquet deliverables (added in Phase 3)
-    ai_context  build the JSON context for the AI assistant
+    ai_context  build the JSON context for the AI assistant (optional question, e.g. python run.py ai_context "top products")
     audit       run the pytest reconciliation suite
     run_all     ingest, dbt_build, analyses, rfm_check, forecast, export, ai_context, audit
     clean       delete generated databases, Parquet files and dbt target
@@ -105,8 +105,8 @@ def cmd_export(_):
     script('export_parquet.py', required=False)
 
 
-def cmd_ai_context(_):
-    script('context_builder.py')
+def cmd_ai_context(args):
+    script('context_builder.py', *(getattr(args, 'question', None) or []))
 
 
 def cmd_audit(_):
@@ -154,6 +154,7 @@ COMMANDS = {
 def main():
     ap = argparse.ArgumentParser(description='RetailPulse AI pipeline runner')
     ap.add_argument('command', choices=sorted(COMMANDS))
+    ap.add_argument('question', nargs='*', help='ai_context only: the question the context is built for')
     ap.add_argument('--file', help='raw CSV/XLSX for ingest (default: first file in data/raw)')
     ap.add_argument('--skip-ingest', action='store_true', help='run_all: reuse the existing raw table')
     args = ap.parse_args()

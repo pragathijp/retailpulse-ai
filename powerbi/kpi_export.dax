@@ -1,0 +1,18 @@
+// KPI export for the reconciliation audit (tests/test_contract.py::test_powerbi_kpis_match_contract).
+//
+// OPTION A (no extra tools): create a calculated table named KPI_Export with the DAX below, add a Table
+// visual with KPI_Export[metric] and KPI_Export[value], choose "..." > Export data > Summarized data > CSV,
+// and save as data/bi_exports/pbi_kpis.csv. Calculated tables ignore slicers, so the values are unfiltered.
+//
+// OPTION B (DAX Studio): run the same expression as: EVALUATE <expression>, with no filters applied,
+// and save the result as CSV to data/bi_exports/pbi_kpis.csv.
+
+KPI_Export =
+UNION(
+    ROW("metric", "gross_revenue", "value", [Gross Revenue]),
+    ROW("metric", "return_amount", "value", [Return Value]),
+    ROW("metric", "net_revenue", "value", [Net Revenue]),
+    ROW("metric", "order_count", "value", [Orders]),
+    ROW("metric", "units_sold", "value", [Units Sold]),
+    ROW("metric", "aov", "value", [AOV])
+)

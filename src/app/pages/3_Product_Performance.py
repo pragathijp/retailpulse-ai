@@ -19,14 +19,16 @@ def load_products():
 
 df_prod = load_products()
 
-top_80_count = df_prod['is_top_80'].sum()
 total_products = len(df_prod)
-pct_top = (top_80_count / total_products) * 100 if total_products > 0 else 0
+ranked_products = int(df_prod['pareto_rank'].notna().sum())  # products with positive net revenue
+top_80_count = int(df_prod['is_top_80'].sum())
+pct_top = (top_80_count / ranked_products) * 100 if ranked_products > 0 else 0
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 col1.metric("Total Products", f"{total_products:,}")
-col2.metric("Top 80% Revenue Products", f"{top_80_count:,}")
-col3.metric("Pareto Density (% of SKUs)", f"{pct_top:.1f}%")
+col2.metric("Ranked Products (positive revenue)", f"{ranked_products:,}")
+col3.metric("Top 80% Revenue Products", f"{top_80_count:,}")
+col4.metric("Pareto Density (% of ranked SKUs)", f"{pct_top:.2f}%")
 
 st.divider()
 
@@ -37,4 +39,5 @@ fig_pareto.add_hline(y=0.8, line_dash="dash", line_color="red", annotation_text=
 st.plotly_chart(fig_pareto, width='stretch')
 
 st.subheader("Top Products Table")
-st.dataframe(df_prod[['stock_code', 'description', 'net_revenue', 'units_sold', 'return_rate', 'is_top_80']].head(50), width='stretch')
+top_table = df_prod.sort_values('net_revenue', ascending=False)
+st.dataframe(top_table[['stock_code', 'description', 'net_revenue', 'units_sold', 'return_rate', 'is_top_80']].head(50), width='stretch')
