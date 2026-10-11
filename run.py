@@ -31,6 +31,20 @@ from common import DB_PATH, DBT_DIR, PROC, ROOT  # noqa: E402
 SRC = ROOT / 'src'
 
 
+def ensure_project_venv():
+    """Re-launch under the project's .venv interpreter when run from another Python (e.g. system Python)."""
+    scripts = 'Scripts' if os.name == 'nt' else 'bin'
+    venv_python = ROOT / '.venv' / scripts / ('python.exe' if os.name == 'nt' else 'python')
+    if not venv_python.exists() or os.environ.get('RP_VENV_REEXEC'):
+        return
+    if Path(sys.executable).absolute() == venv_python.absolute():
+        return
+    print(f'Using project environment: {venv_python}', flush=True)
+    env = os.environ.copy()
+    env['RP_VENV_REEXEC'] = '1'
+    sys.exit(subprocess.run([str(venv_python), str(Path(__file__).resolve()), *sys.argv[1:]], env=env).returncode)
+
+
 def pipeline_env():
     """Environment for dbt: absolute locations so views never depend on the working directory."""
     env = os.environ.copy()
@@ -152,6 +166,7 @@ COMMANDS = {
 
 
 def main():
+    ensure_project_venv()
     ap = argparse.ArgumentParser(description='RetailPulse AI pipeline runner')
     ap.add_argument('command', choices=sorted(COMMANDS))
     ap.add_argument('question', nargs='*', help='ai_context only: the question the context is built for')
